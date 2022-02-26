@@ -43,7 +43,7 @@ const float POS = 1.0;
 MePS2 MePS2(PORT_15);
 
 void _delay(float seconds) {
-  if(seconds < 0.0){
+  if(seconds < 0.0) {
     seconds = 0.0;
   }
   long endTime = millis() + seconds * 1000;
@@ -62,9 +62,6 @@ void setup() {
 void _loop() {
   MePS2.loop();
 }
-
-
-
 
 void loop() {
 
