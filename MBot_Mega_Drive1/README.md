@@ -2,6 +2,10 @@
 
 This program implements driving the [mBot Mega](https://store.makeblock.com/products/makeblock-mbot-mega-robot-kit) with the [Bluetooth Controller](https://www.makeblock.com/accessories/bluetooth-controller).
 
+# Code
+[MBot_Mega_Drive1.ino](MBot_Mega_Drive1.ino)
+
+# Driving Control
 ![](../doc/images/bt_controller2.png)
 
 ## General Background on the Controller
@@ -23,12 +27,12 @@ MePS2.MeAnalog()
 
 Mine is wired like this, and I followed the factory instructions:
 
-| Wheel       | Port on Board | Motor # |
-|-------------|---------------|---------|
-| Left Front  | 2B            | 10      |
-| Left Rear   | 2A            | 2       |
-| Right Front | 1A            | 1       |
-| Right Rear  | 1B            | 9       |
+|    Wheel    | Port on Board | Motor # |
+|:-----------:|:-------------:|:-------:|
+| Left Front  |      2B       |   10    |
+|  Left Rear  |      2A       |    2    |
+| Right Front |      1A       |    1    |
+| Right Rear  |      1B       |    9    |
 
 If you're facing the wheel, motor.run(255) runs the wheel 
 clockwise at 100% power, motor.run(-255) runs it counterclockwise at 100% power.  Example:
