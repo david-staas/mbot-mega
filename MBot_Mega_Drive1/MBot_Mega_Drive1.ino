@@ -10,18 +10,18 @@ MeMegaPiDCMotor right_front(1);
 MeMegaPiDCMotor right_rear(9);
 MeMegaPiDCMotor left_rear(2);
 MeMegaPiDCMotor left_front(10);
-//MeMegaPiDCMotor motor_3(3);
-//MeMegaPiDCMotor motor_11(11);
-//MeMegaPiDCMotor motor_4(4);
-//MeMegaPiDCMotor motor_12(12);
-double angle_rad = PI/180.0;
-double angle_deg = 180.0/PI;
 
+// These are the MePS2.MeAnalog() button assignments for the Bluetooth controller left and right joysticks
 const int JOYSTICK_LX = 2;
 const int JOYSTICK_LY = 4;
 const int JOYSTICK_RX = 6;
 const int JOYSTICK_RY = 8;
+
+// Universal limit we'll use so we don't run the motors at full speed
+// (can cause Bluetooth disconnects without Lithium Ion batteries)
 const float MOTOR_LIMIT = 0.50;  // Max. 50%
+
+// Multipliers for rotating the motors in the correct direction
 const float NEG = -1.0;
 const float POS = 1.0;
 
