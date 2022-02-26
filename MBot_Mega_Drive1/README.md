@@ -17,7 +17,7 @@ MePS2.MeAnalog()
 | MePS2.MeAnalog(2) | Left Joystick - X Axis  | -255 (left) to 255 (right) |
 | MePS2.MeAnalog(4) | Left Joystick - Y Axis  | -255 (down) to 255 (up)    |
 | MePS2.MeAnalog(6) | Right Joystick - X Axis | -255 (left) to 255 (right) |
-| MePS2.MeAnalog(2) | Right Joystick - X Axis | -255 (down) to 255 (up)    |
+| MePS2.MeAnalog(8) | Right Joystick - X Axis | -255 (down) to 255 (up)    |
 
 ## General Background on the Motors for the Wheels
 
@@ -30,7 +30,15 @@ Mine is wired like this, and I followed the factory instructions:
 | Right Front | 1A            | 1       |
 | Right Rear  | 1B            | 9       |
 
-If you're looking at the wheel, motor.run(255) runs that wheel clockwise at 100% power, motor.run(-255) runs it counterclockwise at 100% power.
+If you're facing the wheel, motor.run(255) runs the wheel 
+clockwise at 100% power, motor.run(-255) runs it counterclockwise at 100% power.  Example:
+
+``` 
+MeMegaPiDCMotor right_front(1);
+...
+right_front.run(255);   // 100% power clockwise
+right_front.run(-128);  // 50% power counterclockwise
+```
 
 # Proportional Power Based on Joystick
 
