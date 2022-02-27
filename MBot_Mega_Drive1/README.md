@@ -51,6 +51,7 @@ MePS2.ButtonPressed(x)
 ```
 
 Where x is one of the numbers in purple:
+
 ![](../doc/images/bt_controller4.png)
 
 # General Background on the Motors for the Wheels
