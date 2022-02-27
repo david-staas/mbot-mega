@@ -21,7 +21,7 @@ LOW_SPEED (50%) and HIGH_SPEED (100%) motor limits.
 
 Note the official documentation says not to run the motors at 100%
 when you're using Bluetooth unless you're using Lithium Ion batteries, because there's not
-enough power & you get Bluetooth dropouts.  At 50% I haven't had any problems.
+enough power & you get Bluetooth dropouts, but you can mess around with the values.
 
 ## Proportional Power Based on Joystick
 
@@ -30,6 +30,7 @@ values are used as part of the multiplier when determining the motor power for e
 
 # General Background on the Controller
 
+## Joystick Analog Values
 The [Makeblock library](https://github.com/Makeblock-official/Makeblock-Libraries) has this call that allows you to interrogate the controller's values:
 
 ``` 
@@ -42,6 +43,15 @@ MePS2.MeAnalog()
 | MePS2.MeAnalog(4) | Left Joystick - Y Axis  | -255 (down) to 255 (up)    |
 | MePS2.MeAnalog(6) | Right Joystick - X Axis | -255 (left) to 255 (right) |
 | MePS2.MeAnalog(8) | Right Joystick - X Axis | -255 (down) to 255 (up)    |
+
+## Button Assignments
+The MakeBlock library has this call you can check for a button press:
+``` 
+MePS2.ButtonPressed(x)
+```
+
+Where x is one of the numbers in purple:
+![](../doc/images/bt_controller4.png)
 
 # General Background on the Motors for the Wheels
 
