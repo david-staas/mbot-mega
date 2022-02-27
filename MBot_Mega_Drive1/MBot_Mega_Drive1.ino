@@ -31,10 +31,13 @@ const int JOYSTICK_LX = 2;
 const int JOYSTICK_LY = 4;
 const int JOYSTICK_RX = 6;
 const int JOYSTICK_RY = 8;
+const int CONTROLLER_L2_BUTTON = 7;
 
 // Universal limit we'll use so we don't run the motors at full speed
 // (can cause Bluetooth disconnects without Lithium Ion batteries)
-const float MOTOR_LIMIT = 0.50;  // Max. 50%
+const float LOW_SPEED = 0.50;
+const float HIGH_SPEED = 1.0;
+float motor_limit = LOW_SPEED;
 
 // Multipliers for rotating the motors in the correct direction
 const float NEG = -1.0;
@@ -65,6 +68,16 @@ void _loop() {
 
 void loop() {
 
+  // L2 button on controller toggles speed
+  if(MePS2.ButtonPressed(CONTROLLER_L2_BUTTON)) {
+    if (motor_limit == LOW_SPEED) {
+      motor_limit = HIGH_SPEED;
+    } else {
+      motor_limit = LOW_SPEED;
+    }
+    _delay(0.5);
+  }
+  
   // Left-right slide (left joystick X axis)
   float lx_lf = NEG * (MePS2.MeAnalog(JOYSTICK_LX));
   float lx_lr = POS * (MePS2.MeAnalog(JOYSTICK_LX));
@@ -77,11 +90,17 @@ void loop() {
   float ly_rf = POS * (MePS2.MeAnalog(JOYSTICK_LY));
   float ly_rr = POS * (MePS2.MeAnalog(JOYSTICK_LY));
 
-  // Combine left-right and up-down, then apply the motor limit
-  float lf = (lx_lf + ly_lf) * MOTOR_LIMIT;
-  float lr = (lx_lr + ly_lr) * MOTOR_LIMIT;
-  float rf = (lx_rf + ly_rf) * MOTOR_LIMIT;
-  float rr = (lx_rr + ly_rr) * MOTOR_LIMIT;
+  // Rotate (spin) left/right (right joystick X axis)
+  float rx_lf = NEG * (MePS2.MeAnalog(JOYSTICK_RX));
+  float rx_lr = NEG * (MePS2.MeAnalog(JOYSTICK_RX));
+  float rx_rf = NEG * (MePS2.MeAnalog(JOYSTICK_RX));
+  float rx_rr = NEG * (MePS2.MeAnalog(JOYSTICK_RX));
+
+  // Combine left-right, up-down, and rotate then apply the motor limit
+  float lf = (lx_lf + ly_lf + rx_lf) * motor_limit;
+  float lr = (lx_lr + ly_lr + rx_lr) * motor_limit;
+  float rf = (lx_rf + ly_rf + rx_rf) * motor_limit;
+  float rr = (lx_rr + ly_rr + rx_rr) * motor_limit;
 
   // Apply the resultant power output to the motors
   left_front.run(lf);
