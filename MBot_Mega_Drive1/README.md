@@ -16,8 +16,10 @@ By default, the motors run at max. 50% speed, due to this line:
 float motor_limit = LOW_SPEED;
 ```
 
-However, if you push the L2 button on the controller, it'll toggle between
-LOW_SPEED (50%) and HIGH_SPEED (100%) motor limits.
+However, if you push the L2 button on the controller, it'll cycle between
+LOW_SPEED (50%), MID_SPEED (75%), and HIGH_SPEED (100%) motor limits.
+
+We also set the LEDs to red, yellow, and green according to the power setting.
 
 Note the official documentation says not to run the motors at 100%
 when you're using Bluetooth unless you're using Lithium Ion batteries, because there's not
