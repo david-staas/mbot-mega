@@ -70,43 +70,38 @@ void setup() {
   TCCR2A = _BV(WGM21) | _BV(WGM20);
   TCCR2B = _BV(CS21);
   Serial.begin(115200); // Needed only for Arduino IDE Serial Monitor output; you can comment out if not using
-  left_led.setColor(0, 255,0,0); // red
-  right_led.setColor(0, 255,0,0); // red
-  left_led.show();
-  right_led.show();
+  setLeds(255, 0, 0);
 }
 
 void _loop() {
   MePS2.loop();
 }
 
+// Sets all 4 beads for both LED modules to the given RGB value
+void setLeds(int r, int g, int b) {
+  left_led.setColor(0, r, g, b);
+  right_led.setColor(0, r, g, b);
+  left_led.show();
+  right_led.show();
+}
+
 void checkSpeedButton() {
-  // L2 button on controller toggles speed
+  // L2 button on controller cycles through speeds (low, mid, high)
   if(MePS2.ButtonPressed(L2_BUTTON)) {
     if (motor_limit == LOW_SPEED) {
       motor_limit = MID_SPEED;
-      left_led.setColor(0, 255,216,0); // yellow
-      right_led.setColor(0, 255,216,0); // yellow
-      left_led.show();
-      right_led.show();
+      setLeds(255, 216, 0); // Yellow
+    } else if (motor_limit == MID_SPEED) {
+      motor_limit = HIGH_SPEED;
+      setLeds(0, 255, 0); // Green
     } else {
-      if (motor_limit == MID_SPEED) {
-        motor_limit = HIGH_SPEED;
-        left_led.setColor(0, 0,255,0); // green
-        right_led.setColor(0, 0,255,0); // green
-        left_led.show();
-        right_led.show();
-      } else {
-        motor_limit = LOW_SPEED;
-        left_led.setColor(0, 255,0,0); // red
-        right_led.setColor(0, 255,0,0); // red
-        left_led.show();
-        right_led.show();
-      }
+      motor_limit = LOW_SPEED;
+      setLeds(255, 0, 0); // Red
     }
     _delay(0.5);
   }  
 }
+
 
 void loop() {
   checkSpeedButton();
