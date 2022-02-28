@@ -19,7 +19,10 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
 #include <MeMegaPi.h>
+#include "src/MeNewRGBLed.h"
 
+MeNewRGBLed left_led(67,4); // Port A13
+MeNewRGBLed right_led(68,4); // Port A14
 MeMegaPiDCMotor right_front(1);
 MeMegaPiDCMotor right_rear(9);
 MeMegaPiDCMotor left_rear(2);
@@ -36,8 +39,10 @@ const int L2_BUTTON = 7;
 // Universal limit we'll use so we don't run the motors at full speed
 // (can cause Bluetooth disconnects without Lithium Ion batteries)
 const float LOW_SPEED = 0.50;
+const float MID_SPEED = 0.75;
 const float HIGH_SPEED = 1.0;
 float motor_limit = LOW_SPEED;
+
 
 float lx_lf, lx_lr, lx_rf, lx_rr; // Left stick X-axis contribution to each wheel
 float ly_lf, ly_lr, ly_rf, ly_rr; // Left stick Y-axis contribution to each wheel
@@ -65,23 +70,46 @@ void setup() {
   TCCR2A = _BV(WGM21) | _BV(WGM20);
   TCCR2B = _BV(CS21);
   Serial.begin(115200); // Needed only for Arduino IDE Serial Monitor output; you can comment out if not using
+  left_led.setColor(0, 255,0,0); // red
+  right_led.setColor(0, 255,0,0); // red
+  left_led.show();
+  right_led.show();
 }
 
 void _loop() {
   MePS2.loop();
 }
 
-void loop() {
-
+void checkSpeedButton() {
   // L2 button on controller toggles speed
   if(MePS2.ButtonPressed(L2_BUTTON)) {
     if (motor_limit == LOW_SPEED) {
-      motor_limit = HIGH_SPEED;
+      motor_limit = MID_SPEED;
+      left_led.setColor(0, 255,216,0); // yellow
+      right_led.setColor(0, 255,216,0); // yellow
+      left_led.show();
+      right_led.show();
     } else {
-      motor_limit = LOW_SPEED;
+      if (motor_limit == MID_SPEED) {
+        motor_limit = HIGH_SPEED;
+        left_led.setColor(0, 0,255,0); // green
+        right_led.setColor(0, 0,255,0); // green
+        left_led.show();
+        right_led.show();
+      } else {
+        motor_limit = LOW_SPEED;
+        left_led.setColor(0, 255,0,0); // red
+        right_led.setColor(0, 255,0,0); // red
+        left_led.show();
+        right_led.show();
+      }
     }
     _delay(0.5);
-  }
+  }  
+}
+
+void loop() {
+  checkSpeedButton();
   
   // Left/right slide (left joystick X axis)
   lx_lf = NEG * (MePS2.MeAnalog(JOYSTICK_LX));
