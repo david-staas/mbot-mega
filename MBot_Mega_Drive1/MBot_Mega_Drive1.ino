@@ -20,6 +20,7 @@
 #include <SoftwareSerial.h>
 #include <MeMegaPi.h>
 #include "src/MeNewRGBLed.h"
+#include "src/MeCollisionSensor.h"
 
 MeNewRGBLed left_led(67,4); // Port A13
 MeNewRGBLed right_led(68,4); // Port A14
@@ -27,6 +28,11 @@ MeMegaPiDCMotor right_front(1);
 MeMegaPiDCMotor right_rear(9);
 MeMegaPiDCMotor left_rear(2);
 MeMegaPiDCMotor left_front(10);
+MeCollisionSensor left_bump(65); // Port A11 (left)
+MeCollisionSensor right_bump(66); // Port A12 (right)
+
+double currentTime = 0;
+double lastTime = 0;
 
 // These are the MePS2.MeAnalog() button assignments for the Bluetooth controller left and right joysticks
 // See https://github.com/Makeblock-official/Makeblock-Libraries/blob/master/src/MePS2.h
@@ -54,6 +60,10 @@ const float NEG = -1.0;
 const float POS = 1.0;
 
 MePS2 MePS2(PORT_15);
+
+double getLastTime() {
+  return currentTime = millis() / 1000.0 - lastTime;
+}
 
 void _delay(float seconds) {
   if(seconds < 0.0) {
@@ -103,8 +113,25 @@ void checkSpeedButton() {
 }
 
 
+void checkRearImpact() {
+  if (left_bump.isCollision() || right_bump.isCollision()) {
+    // Run front wheels forward for 0.4 sec.
+    left_front.run(-128);
+    right_front.run(128);
+    left_rear.run(0);
+    right_rear.run(0);
+    _delay(.4);
+    // All wheels off for another 0.6 sec.
+    left_front.run(0);
+    right_front.run(0);          
+    _delay(.6);
+  }
+}
+
+
 void loop() {
   checkSpeedButton();
+  checkRearImpact();
   
   // Left/right slide (left joystick X axis)
   lx_lf = NEG * (MePS2.MeAnalog(JOYSTICK_LX));
