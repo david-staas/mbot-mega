@@ -21,6 +21,8 @@
 #include <MeMegaPi.h>
 #include "src/MeNewRGBLed.h"
 #include "src/MeCollisionSensor.h"
+#include "src/MeBarrierSensor.h"
+#include "src/MeSingleLineFollower.h"
 
 MeNewRGBLed left_led(67,4); // Port A13
 MeNewRGBLed right_led(68,4); // Port A14
@@ -30,9 +32,15 @@ MeMegaPiDCMotor left_rear(2);
 MeMegaPiDCMotor left_front(10);
 MeCollisionSensor left_bump(65); // Port A11 (left)
 MeCollisionSensor right_bump(66); // Port A12 (right)
+MeBarrierSensor avoid_left(60); // Port A6 (left side)
+MeBarrierSensor avoid_mid(61); // Port A7 (center)
+MeBarrierSensor avoid_right(62); // Port A8 (right side)
+MeSingleLineFollower lf_left(63); // Port A9 (left)
+MeSingleLineFollower lf_right(64); // Port A10 (right)
 
 double currentTime = 0;
 double lastTime = 0;
+boolean lineFollowMode = false;
 
 // These are the MePS2.MeAnalog() button assignments for the Bluetooth controller left and right joysticks
 // See https://github.com/Makeblock-official/Makeblock-Libraries/blob/master/src/MePS2.h
@@ -41,6 +49,7 @@ const int JOYSTICK_LY = 4;
 const int JOYSTICK_RX = 6;
 const int JOYSTICK_RY = 8;
 const int L2_BUTTON = 7;
+const int R2_BUTTON = 3;
 
 // Universal limit we'll use so we don't run the motors at full speed
 // (can cause Bluetooth disconnects without Lithium Ion batteries)
@@ -48,6 +57,15 @@ const float LOW_SPEED = 0.50;
 const float MID_SPEED = 0.75;
 const float HIGH_SPEED = 1.0;
 float motor_limit = LOW_SPEED;
+
+const int LF_STRAIGHT = 3;
+const int LF_DRIFTING_LEFT = 2;
+const int LF_DRIFTING_RIGHT = 4;
+const int LF_OFFLINE = 1;
+const int FWD = 1;
+const int LEFT = 2;
+const int RIGHT = 3;
+int last_state, current_state;
 
 
 float lx_lf, lx_lr, lx_rf, lx_rr; // Left stick X-axis contribution to each wheel
@@ -128,12 +146,91 @@ void checkRearImpact() {
   }
 }
 
+void checkFrontImpact() {
+  if (avoid_left.isBarried() > 0 || avoid_mid.isBarried() > 0 || avoid_right.isBarried() > 0) {
+     // Run front wheels backwards for 0.4 sec.
+    left_front.run(128);
+    right_front.run(-128);
+    left_rear.run(0);
+    right_rear.run(0);
+    _delay(.4);
+    // All wheels off for another 0.6 sec.
+    left_front.run(0);
+    right_front.run(0);          
+    _delay(.6);
+  }
+}
 
-void loop() {
-  checkSpeedButton();
-  checkRearImpact();
-  
-  // Left/right slide (left joystick X axis)
+void checkLineFollowModeButton() {
+  if (MePS2.ButtonPressed(R2_BUTTON)) {
+    if (lineFollowMode) {
+      lineFollowMode = false;
+    } else {
+      lineFollowMode = true;
+      last_state = LF_STRAIGHT;
+    }
+  }
+}
+
+void nudge(int direction, int count) {
+  for (int i = 0; i < count; i++) {
+    if (direction == LEFT) {
+      left_front.run(255 * LOW_SPEED);
+      right_front.run(255 * LOW_SPEED);
+      left_rear.run(255 * LOW_SPEED);
+      right_rear.run(255 * LOW_SPEED);
+      _delay(0.75);
+    }
+    if (direction == RIGHT) {
+      left_front.run(-255 * LOW_SPEED);
+      right_front.run(-255 * LOW_SPEED);
+      left_rear.run(-255 * LOW_SPEED);
+      right_rear.run(-255 * LOW_SPEED);
+      _delay(0.75);
+    }
+    if (direction == FWD) {
+      left_front.run(-255 * LOW_SPEED);
+      right_front.run(255 * LOW_SPEED);
+      left_rear.run(-255 * LOW_SPEED);
+      right_rear.run(255 * LOW_SPEED);
+      _delay(0.75);
+    }
+    left_front.run(0);
+    right_front.run(0);
+    left_rear.run(0);
+    right_rear.run(0);
+  }
+}
+
+
+void followLine() {
+  if ((lf_left.readSensor() == 0) && (lf_right.readSensor() == 0)) {
+    // both black
+    current_state = LF_STRAIGHT;
+  } else if ((lf_left.readSensor() == 1) && (lf_right.readSensor() == 0)) {
+    // left white, right black
+    current_state = LF_DRIFTING_LEFT;
+  } else if ((lf_left.readSensor() == 0) && (lf_right.readSensor() == 1)) {
+    // left black, right white
+    current_state = LF_DRIFTING_RIGHT;
+  } else {
+    current_state = LF_OFFLINE;
+  }
+
+  if (current_state == LF_DRIFTING_RIGHT) {
+    nudge(LEFT, 1);
+  }
+  if (current_state == LF_DRIFTING_LEFT) {
+    nudge(RIGHT, 1);
+  }
+  if (current_state == LF_STRAIGHT) {
+    nudge(FWD, 1);
+  }
+  last_state = current_state;
+}
+
+void drive() {
+    // Left/right slide (left joystick X axis)
   lx_lf = NEG * (MePS2.MeAnalog(JOYSTICK_LX));
   lx_lr = POS * (MePS2.MeAnalog(JOYSTICK_LX));
   lx_rf = NEG * (MePS2.MeAnalog(JOYSTICK_LX));
@@ -163,6 +260,18 @@ void loop() {
   left_rear.run(lr);
   right_front.run(rf);
   right_rear.run(rr);
+}
+
+void loop() {
+  checkSpeedButton();
+  checkRearImpact();
+  checkFrontImpact();
+  checkLineFollowModeButton();
+  if (lineFollowMode) {
+    followLine();
+  } else {
+    drive();
+  }
 
   _loop();
 }
