@@ -21,6 +21,7 @@
 #include <MeMegaPi.h>
 #include "src/MeNewRGBLed.h"
 #include "src/MeCollisionSensor.h"
+#include "src/MeBarrierSensor.h"
 
 MeNewRGBLed left_led(67,4); // Port A13
 MeNewRGBLed right_led(68,4); // Port A14
@@ -30,7 +31,9 @@ MeMegaPiDCMotor left_rear(2);
 MeMegaPiDCMotor left_front(10);
 MeCollisionSensor left_bump(65); // Port A11 (left)
 MeCollisionSensor right_bump(66); // Port A12 (right)
-
+MeBarrierSensor left_collision(60); // Port A6
+MeBarrierSensor mid_collision(61); // Port A7
+MeBarrierSensor right_collision(62); // Port A8
 double currentTime = 0;
 double lastTime = 0;
 
@@ -129,9 +132,26 @@ void checkRearImpact() {
 }
 
 
+void checkFrontImpact() {
+  if (left_collision.isBarried() > 0 || mid_collision.isBarried() > 0 || right_collision.isBarried() > 0) {
+      // Run front wheels backward for 0.4 sec.
+      left_front.run(128);
+      right_front.run(-128);
+      left_rear.run(0);
+      right_rear.run(0);
+      _delay(.4);
+      // All wheels off for another 0.6 sec.
+      left_front.run(0);
+      right_front.run(0);
+      _delay(.6);
+  }
+}
+
+
 void loop() {
   checkSpeedButton();
   checkRearImpact();
+  checkFrontImpact();
   
   // Left/right slide (left joystick X axis)
   lx_lf = NEG * (MePS2.MeAnalog(JOYSTICK_LX));
