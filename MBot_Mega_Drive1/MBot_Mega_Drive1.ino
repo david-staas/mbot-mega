@@ -34,10 +34,10 @@ MeCollisionSensor left_bump(65); // Port A11 (left)
 MeCollisionSensor right_bump(66); // Port A12 (right)
 MeSingleLineFollower lf_left(63); // Port A9 (left)
 MeSingleLineFollower lf_right(64); // Port A10 (right)
-
 MeBarrierSensor left_collision(60); // Port A6
 MeBarrierSensor mid_collision(61); // Port A7
 MeBarrierSensor right_collision(62); // Port A8
+
 double currentTime = 0;
 double lastTime = 0;
 boolean lineFollowMode = false;
@@ -92,6 +92,7 @@ void _delay(float seconds) {
   while(millis() < endTime) _loop();
 }
 
+
 void setup() {
   MePS2.begin(115200);
   TCCR1A = _BV(WGM10);
@@ -102,9 +103,11 @@ void setup() {
   setLeds(255, 0, 0);
 }
 
+
 void _loop() {
   MePS2.loop();
 }
+
 
 // Sets all 4 beads for both LED modules to the given RGB value
 void setLeds(int r, int g, int b) {
@@ -114,10 +117,12 @@ void setLeds(int r, int g, int b) {
   right_led.show();
 }
 
+
 void setLeftLed(int r, int g, int b) {
   left_led.setColor(0, r, g, b);
   left_led.show();
 }
+
 
 void setRightLed(int r, int g, int b) {
   right_led.setColor(0, r, g, b);
@@ -130,16 +135,24 @@ void checkSpeedButton() {
   if(MePS2.ButtonPressed(L2_BUTTON)) {
     if (motor_limit == LOW_SPEED) {
       motor_limit = MID_SPEED;
-      setLeds(255, 216, 0); // Yellow
     } else if (motor_limit == MID_SPEED) {
       motor_limit = HIGH_SPEED;
-      setLeds(0, 255, 0); // Green
     } else {
       motor_limit = LOW_SPEED;
-      setLeds(255, 0, 0); // Red
     }
+    setDriveLights();
     _delay(0.5);
   }  
+}
+
+void setDriveLights() {
+  if (motor_limit == LOW_SPEED) {
+    setLeds(255, 0, 0); // Red
+  } else if (motor_limit == MID_SPEED) {
+    setLeds(255, 216, 0); // Yellow
+  } else {
+    setLeds(0, 255, 0); // Green
+  }
 }
 
 
@@ -163,6 +176,7 @@ void checkLineFollowModeButton() {
   if (MePS2.ButtonPressed(R2_BUTTON)) {
     if (lineFollowMode) {
       lineFollowMode = false;
+      setDriveLights();
       stop();
     } else {
       lineFollowMode = true;
@@ -172,6 +186,8 @@ void checkLineFollowModeButton() {
   }
 }
 
+
+// Make small, slow movements in line follow mode
 void nudge(int direction, int count) {
   for (int i = 0; i < count; i++) {
     if (direction == LEFT) {
@@ -211,16 +227,16 @@ void followLine() {
   } else if ((lf_left.readSensor() == 1) && (lf_right.readSensor() == 0)) {
     // left white, right black
     current_state = LF_DRIFTING_LEFT;
-    setLeftLed(255, 0, 0);
+    setLeftLed(255, 255, 255);
     setRightLed(0, 0, 0);
   } else if ((lf_left.readSensor() == 0) && (lf_right.readSensor() == 1)) {
     // left black, right white
     current_state = LF_DRIFTING_RIGHT;
     setLeftLed(0, 0, 0);
-    setRightLed(255, 0, 0);
+    setRightLed(255, 255, 255);
   } else {
     current_state = LF_OFFLINE;
-    setLeds(255, 0, 0);
+    setLeds(255, 255, 255);
   }
 
   if (current_state == LF_DRIFTING_RIGHT) {
@@ -242,6 +258,7 @@ void followLine() {
       }
   last_state = current_state;
 }
+
 
 void drive() {
   // Left/right slide (left joystick X axis)
@@ -276,6 +293,7 @@ void drive() {
   right_rear.run(rr);
 }
 
+
 void checkFrontImpact() {
   if (left_collision.isBarried() > 0 || mid_collision.isBarried() > 0 || right_collision.isBarried() > 0) {
       // Run front wheels backward for 0.4 sec.
@@ -290,6 +308,7 @@ void checkFrontImpact() {
       _delay(.6);
   }
 }
+
 
 void stop() {
   left_rear.run(0);
