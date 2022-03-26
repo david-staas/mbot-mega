@@ -53,7 +53,7 @@ const int R2_BUTTON = 3;
 
 // Universal limit we'll use so we don't run the motors at full speed
 // (can cause Bluetooth disconnects without Lithium Ion batteries)
-const float LINE_FOLLOW_SPEED = 0.10;
+const float LINE_FOLLOW_SPEED = 0.20;
 const float LOW_SPEED = 0.50;
 const float MID_SPEED = 0.75;
 const float HIGH_SPEED = 1.0;
@@ -114,6 +114,17 @@ void setLeds(int r, int g, int b) {
   right_led.show();
 }
 
+void setLeftLed(int r, int g, int b) {
+  left_led.setColor(0, r, g, b);
+  left_led.show();
+}
+
+void setRightLed(int r, int g, int b) {
+  right_led.setColor(0, r, g, b);
+  right_led.show();
+}
+
+
 void checkSpeedButton() {
   // L2 button on controller cycles through speeds (low, mid, high)
   if(MePS2.ButtonPressed(L2_BUTTON)) {
@@ -167,21 +178,21 @@ void nudge(int direction, int count) {
       right_front.run(255 * LINE_FOLLOW_SPEED);
       left_rear.run(255 * LINE_FOLLOW_SPEED);
       right_rear.run(255 * LINE_FOLLOW_SPEED);
-      _delay(0.75);
+      _delay(0.09);
     }
     if (direction == RIGHT) {
       left_front.run(-255 * LINE_FOLLOW_SPEED);
       right_front.run(-255 * LINE_FOLLOW_SPEED);
       left_rear.run(-255 * LINE_FOLLOW_SPEED);
       right_rear.run(-255 * LINE_FOLLOW_SPEED);
-      _delay(0.75);
+      _delay(0.09);
     }
     if (direction == FWD) {
       left_front.run(-255 * LINE_FOLLOW_SPEED);
       right_front.run(255 * LINE_FOLLOW_SPEED);
       left_rear.run(-255 * LINE_FOLLOW_SPEED);
       right_rear.run(255 * LINE_FOLLOW_SPEED);
-      _delay(0.75);
+      _delay(0.09);
     }
     left_front.run(0);
     right_front.run(0);
@@ -195,14 +206,20 @@ void followLine() {
   if ((lf_left.readSensor() == 0) && (lf_right.readSensor() == 0)) {
     // both black
     current_state = LF_STRAIGHT;
+    setLeds(0, 0, 0);
   } else if ((lf_left.readSensor() == 1) && (lf_right.readSensor() == 0)) {
     // left white, right black
     current_state = LF_DRIFTING_LEFT;
+    setLeftLed(255, 0, 0);
+    setRightLed(0, 0, 0);
   } else if ((lf_left.readSensor() == 0) && (lf_right.readSensor() == 1)) {
     // left black, right white
     current_state = LF_DRIFTING_RIGHT;
+    setLeftLed(0, 0, 0);
+    setRightLed(255, 0, 0);
   } else {
     current_state = LF_OFFLINE;
+    setLeds(255, 0, 0);
   }
 
   if (current_state == LF_DRIFTING_RIGHT) {
