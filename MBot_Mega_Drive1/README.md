@@ -30,6 +30,12 @@ enough power & you get Bluetooth dropouts, but you can mess around with the valu
 My code runs the robot faster when the joystick is pushed harder in a direction; the joystick
 values are used as part of the multiplier when determining the motor power for each wheel.
 
+## Line Follow Mode
+
+This code was written from scratch as a learning exercise, so it's pretty slow.  It does, however, reliably follow
+the line template that comes with the robot.  The LEDs light up when the sensor on that side goes off the
+line.  Push R2 to toggle between line follow mode and drive mode.
+
 # General Background on the Controller
 
 ## Joystick Analog Values
