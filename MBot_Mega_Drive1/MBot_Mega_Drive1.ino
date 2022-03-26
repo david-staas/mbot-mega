@@ -168,6 +168,7 @@ void checkLineFollowModeButton() {
       lineFollowMode = true;
       last_state = LF_STRAIGHT;
     }
+    _delay(0.5);
   }
 }
 
