@@ -32,9 +32,6 @@ MeMegaPiDCMotor left_rear(2);
 MeMegaPiDCMotor left_front(10);
 MeCollisionSensor left_bump(65); // Port A11 (left)
 MeCollisionSensor right_bump(66); // Port A12 (right)
-MeBarrierSensor avoid_left(60); // Port A6 (left side)
-MeBarrierSensor avoid_mid(61); // Port A7 (center)
-MeBarrierSensor avoid_right(62); // Port A8 (right side)
 MeSingleLineFollower lf_left(63); // Port A9 (left)
 MeSingleLineFollower lf_right(64); // Port A10 (right)
 
@@ -56,6 +53,7 @@ const int R2_BUTTON = 3;
 
 // Universal limit we'll use so we don't run the motors at full speed
 // (can cause Bluetooth disconnects without Lithium Ion batteries)
+const float LINE_FOLLOW_SPEED = 0.10;
 const float LOW_SPEED = 0.50;
 const float MID_SPEED = 0.75;
 const float HIGH_SPEED = 1.0;
@@ -149,25 +147,12 @@ void checkRearImpact() {
   }
 }
 
-void checkFrontImpact() {
-  if (avoid_left.isBarried() > 0 || avoid_mid.isBarried() > 0 || avoid_right.isBarried() > 0) {
-     // Run front wheels backwards for 0.4 sec.
-    left_front.run(128);
-    right_front.run(-128);
-    left_rear.run(0);
-    right_rear.run(0);
-    _delay(.4);
-    // All wheels off for another 0.6 sec.
-    left_front.run(0);
-    right_front.run(0);
-    _delay(.6);
-  }
-}
 
 void checkLineFollowModeButton() {
   if (MePS2.ButtonPressed(R2_BUTTON)) {
     if (lineFollowMode) {
       lineFollowMode = false;
+      stop();
     } else {
       lineFollowMode = true;
       last_state = LF_STRAIGHT;
@@ -178,24 +163,24 @@ void checkLineFollowModeButton() {
 void nudge(int direction, int count) {
   for (int i = 0; i < count; i++) {
     if (direction == LEFT) {
-      left_front.run(255 * LOW_SPEED);
-      right_front.run(255 * LOW_SPEED);
-      left_rear.run(255 * LOW_SPEED);
-      right_rear.run(255 * LOW_SPEED);
+      left_front.run(255 * LINE_FOLLOW_SPEED);
+      right_front.run(255 * LINE_FOLLOW_SPEED);
+      left_rear.run(255 * LINE_FOLLOW_SPEED);
+      right_rear.run(255 * LINE_FOLLOW_SPEED);
       _delay(0.75);
     }
     if (direction == RIGHT) {
-      left_front.run(-255 * LOW_SPEED);
-      right_front.run(-255 * LOW_SPEED);
-      left_rear.run(-255 * LOW_SPEED);
-      right_rear.run(-255 * LOW_SPEED);
+      left_front.run(-255 * LINE_FOLLOW_SPEED);
+      right_front.run(-255 * LINE_FOLLOW_SPEED);
+      left_rear.run(-255 * LINE_FOLLOW_SPEED);
+      right_rear.run(-255 * LINE_FOLLOW_SPEED);
       _delay(0.75);
     }
     if (direction == FWD) {
-      left_front.run(-255 * LOW_SPEED);
-      right_front.run(255 * LOW_SPEED);
-      left_rear.run(-255 * LOW_SPEED);
-      right_rear.run(255 * LOW_SPEED);
+      left_front.run(-255 * LINE_FOLLOW_SPEED);
+      right_front.run(255 * LINE_FOLLOW_SPEED);
+      left_rear.run(-255 * LINE_FOLLOW_SPEED);
+      right_rear.run(255 * LINE_FOLLOW_SPEED);
       _delay(0.75);
     }
     left_front.run(0);
@@ -229,38 +214,18 @@ void followLine() {
   if (current_state == LF_STRAIGHT) {
     nudge(FWD, 1);
   }
+  if (current_state == LF_OFFLINE) {
+      if (last_state == LF_DRIFTING_RIGHT)
+        nudge(LEFT, 3);
+      } else if (last_state == LF_DRIFTING_LEFT) {
+        nudge(RIGHT, 3);
+      } else {
+        stop();
+      }
   last_state = current_state;
 }
 
 void drive() {
-    // Left/right slide (left joystick X axis)
-void checkFrontImpact() {
-  if (left_collision.isBarried() > 0 || mid_collision.isBarried() > 0 || right_collision.isBarried() > 0) {
-      // Run front wheels backward for 0.4 sec.
-      left_front.run(128);
-      right_front.run(-128);
-      left_rear.run(0);
-      right_rear.run(0);
-      _delay(.4);
-      // All wheels off for another 0.6 sec.
-      left_front.run(0);
-      right_front.run(0);
-      _delay(.6);
-  }
-}
-
-
-void loop() {
-  checkSpeedButton();
-  checkRearImpact();
-  checkFrontImpact();
-  checkLineFollowModeButton();
-  if (lineFollowMode) {
-    followLine();
-  } else {
-    drive();
-  }
-
   // Left/right slide (left joystick X axis)
   lx_lf = NEG * (MePS2.MeAnalog(JOYSTICK_LX));
   lx_lr = POS * (MePS2.MeAnalog(JOYSTICK_LX));
@@ -291,6 +256,40 @@ void loop() {
   left_rear.run(lr);
   right_front.run(rf);
   right_rear.run(rr);
+}
 
+void checkFrontImpact() {
+  if (left_collision.isBarried() > 0 || mid_collision.isBarried() > 0 || right_collision.isBarried() > 0) {
+      // Run front wheels backward for 0.4 sec.
+      left_front.run(128);
+      right_front.run(-128);
+      left_rear.run(0);
+      right_rear.run(0);
+      _delay(.4);
+      // All wheels off for another 0.6 sec.
+      left_front.run(0);
+      right_front.run(0);
+      _delay(.6);
+  }
+}
+
+void stop() {
+  left_rear.run(0);
+  right_rear.run(0);
+  left_front.run(0);
+  right_front.run(0);
+}
+
+
+void loop() {
+  checkSpeedButton();
+  checkRearImpact();
+  checkFrontImpact();
+  checkLineFollowModeButton();
+  if (lineFollowMode) {
+    followLine();
+  } else {
+    drive();
+  }
   _loop();
 }
