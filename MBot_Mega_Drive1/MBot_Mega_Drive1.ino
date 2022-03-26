@@ -38,6 +38,9 @@ MeBarrierSensor avoid_right(62); // Port A8 (right side)
 MeSingleLineFollower lf_left(63); // Port A9 (left)
 MeSingleLineFollower lf_right(64); // Port A10 (right)
 
+MeBarrierSensor left_collision(60); // Port A6
+MeBarrierSensor mid_collision(61); // Port A7
+MeBarrierSensor right_collision(62); // Port A8
 double currentTime = 0;
 double lastTime = 0;
 boolean lineFollowMode = false;
@@ -156,7 +159,7 @@ void checkFrontImpact() {
     _delay(.4);
     // All wheels off for another 0.6 sec.
     left_front.run(0);
-    right_front.run(0);          
+    right_front.run(0);
     _delay(.6);
   }
 }
@@ -231,6 +234,34 @@ void followLine() {
 
 void drive() {
     // Left/right slide (left joystick X axis)
+void checkFrontImpact() {
+  if (left_collision.isBarried() > 0 || mid_collision.isBarried() > 0 || right_collision.isBarried() > 0) {
+      // Run front wheels backward for 0.4 sec.
+      left_front.run(128);
+      right_front.run(-128);
+      left_rear.run(0);
+      right_rear.run(0);
+      _delay(.4);
+      // All wheels off for another 0.6 sec.
+      left_front.run(0);
+      right_front.run(0);
+      _delay(.6);
+  }
+}
+
+
+void loop() {
+  checkSpeedButton();
+  checkRearImpact();
+  checkFrontImpact();
+  checkLineFollowModeButton();
+  if (lineFollowMode) {
+    followLine();
+  } else {
+    drive();
+  }
+
+  // Left/right slide (left joystick X axis)
   lx_lf = NEG * (MePS2.MeAnalog(JOYSTICK_LX));
   lx_lr = POS * (MePS2.MeAnalog(JOYSTICK_LX));
   lx_rf = NEG * (MePS2.MeAnalog(JOYSTICK_LX));
@@ -260,18 +291,6 @@ void drive() {
   left_rear.run(lr);
   right_front.run(rf);
   right_rear.run(rr);
-}
-
-void loop() {
-  checkSpeedButton();
-  checkRearImpact();
-  checkFrontImpact();
-  checkLineFollowModeButton();
-  if (lineFollowMode) {
-    followLine();
-  } else {
-    drive();
-  }
 
   _loop();
 }
