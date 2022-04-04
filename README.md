@@ -208,3 +208,45 @@ From the manual:
 ![](doc/images/module-ports-1.jpg)
 
 ![](doc/images/module-ports-2.jpg)
+
+
+# Adding a Raspberry Pi
+
+https://support.makeblock.com/hc/en-us/articles/1500012868722-Program-mBot-Mega-with-Raspberry-Pi-in-Python
+
+https://forum.makeblock.com/t/mbot-mega-from-rpi/18926/9
+
+In order to connect the Mega's Arduino board to the Raspberry Pi, you'll need a header extender
+like this:
+
+![](doc/images/header_extender.png)
+
+I cut mine off with a Dremel so there's only 5 pins:
+
+![](doc/images/IMG_8516a.jpg)
+
+Board orientation:
+
+![](doc/images/IMG_8517a.jpg)
+
+Here are the pins you want to extend on the RasPi:
+
+![](doc/images/IMG_8520a.jpg)
+![](doc/images/IMG_8521a.jpg)
+
+Mount the Arduino on top:
+
+![](doc/images/IMG_8522a.jpg)
+
+## Soldering
+
+If you intend to solder the connection (which I think is probably required to get a
+decent electrical connection), make darn sure you've done everything you want to your
+RasPi first because I don't think it's going to be terribly easy to desolder and separate
+them later.
+
+## RasPi Fan
+
+On my other Raspberry Pi 4, I use the little included fan & it does help.  In the
+configuration above, there's no good way to mount the fan so I didn't use it - I
+hope the RasPi handles the heat OK.  Use this way at your own risk.
