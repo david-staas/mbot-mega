@@ -216,34 +216,57 @@ https://support.makeblock.com/hc/en-us/articles/1500012868722-Program-mBot-Mega-
 
 https://forum.makeblock.com/t/mbot-mega-from-rpi/18926/9
 
+## Header extender:
 In order to connect the Mega's Arduino board to the Raspberry Pi, you'll need a header extender
 like this:
 
 ![](doc/images/header_extender.png)
 
+## Cut off the unused portion:
+
 I cut mine off with a Dremel so there's only 5 pins:
 
 ![](doc/images/IMG_8516a.jpg)
 
-Board orientation:
+## Board orientation
 
 ![](doc/images/IMG_8517a.jpg)
+
+## Extending the RasPi pins
 
 Here are the pins you want to extend on the RasPi:
 
 ![](doc/images/IMG_8520a.jpg)
 ![](doc/images/IMG_8521a.jpg)
 
-Mount the Arduino on top:
+Now you'll want to solder one of these onto the bottom of the Arduino board.  Using 2
+separate header extenders like this allows you to separate the boards without desoldering them.
 
-![](doc/images/IMG_8522a.jpg)
+![](doc/images/header_extender2.png)
 
-## Soldering
+## If you need to extend the sensor cables from underneath
 
-If you intend to solder the connection (which I think is probably required to get a
-decent electrical connection), make darn sure you've done everything you want to your
-RasPi first because I don't think it's going to be terribly easy to desolder and separate
-them later.
+You may need to extend some of the cables using these in order to put the Arduino on top of the RasPi:
+
+![](doc/images/cable_ext.png)
+
+## Connect the two header extenders
+
+After soldering, mount the Arduino on top, pushing the one header extender down onto the other:
+
+![](doc/images/IMG_8524a.jpg)
+
+## Put an 8mm spacer on the opposite side underneath
+
+To support the Arduino on the opposite side.  I just 3D printed a little 8mm high rectangle and
+taped it down on top of the RasPi case to support the other end of the Arduino board so there
+was no stress on my crappy solder joints.
+
+## Power up and test
+
+Powering up the Arduino should also power up the RasPi, and if you enabled VNC, you should be
+able to wait a few minutes until it boots, then remote in.  Or you can hook up a keyboard/mouse
+and monitor to program it.
 
 ## RasPi Fan
 
