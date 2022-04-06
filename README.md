@@ -262,6 +262,8 @@ To support the Arduino on the opposite side.  I just 3D printed a little 8mm hig
 taped it down on top of the RasPi case to support the other end of the Arduino board so there
 was no stress on my crappy solder joints.
 
+![](doc/images/spacer.jpg)
+
 ## Power up and test
 
 Powering up the Arduino should also power up the RasPi, and if you enabled VNC, you should be
